@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><title>Login - POSKASIR.XYZ</title><link rel="stylesheet" href="style.css"><link rel="icon" href="https://cdn.photourl.com/member/2026-07-20-9a65298a-debd-4817-96d1-aad7db81e671.jpg"></head>
+<body><div class="container"><h1>POSKASIR.XYZ</h1>
+<button onclick="showLogin()">Login</button><button onclick="showDaftar()">Daftar</button>
+<div id="form"><input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><button id="btnAksi">Masuk</button></div></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+const firebaseConfig = {apiKey:"AIzaSyAS6vV7vmrTVfwvf8hKuu78gjdP_LXRFBY",authDomain:"poskasirxyz.firebaseapp.com",projectId:"poskasirxyz",storageBucket:"poskasirxyz.firebasestorage.app",messagingSenderId:"541115387509",appId:"1:541115387509:web:84b488359b814c1fdbb23c"};
+const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
+let mode = 'login';
+function showDaftar(){mode='daftar';btnAksi.innerText='Daftar';}
+function showLogin(){mode='login';btnAksi.innerText='Masuk';}
+btnAksi.onclick = async () => {
+  const email=email.value, pass=password.value;
+  if(mode==='daftar'){
+    const res = await createUserWithEmailAndPassword(auth,email,pass);
+    await setDoc(doc(db,"users",res.user.uid),{email,status:"belum_bayar",toko:"Toko Saya"});
+    alert('Daftar berhasil. Silakan bayar'); window.location='bayar.html';
+  } else {
+    const res = await signInWithEmailAndPassword(auth,email,pass);
+    const snap = await getDoc(doc(db,"users",res.user.uid));
+    if(snap.data().status==='aktif') window.location='dashboard.html'; else window.location='bayar.html';
+  }
+}
+</script></body></html>

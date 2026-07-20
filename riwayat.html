@@ -1,0 +1,22 @@
+<!DOCTYPE html><html><head><title>Riwayat - POSKASIR.XYZ</title><link rel="stylesheet" href="style.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script></head>
+<body><div class="layout"><div class="sidebar"><img src="https://cdn.photourl.com/member/2026-07-20-22f2e4d1-45a1-4459-a6f1-b1591f89e95a.png"><a href="dashboard.html">Kasir</a><a href="kelola-menu.html">Kelola Barang</a><a href="riwayat.html">Riwayat</a><a onclick="logout()">Logout</a></div>
+<div class="main"><div class="container" style="max-width:900px"><h1>Riwayat Transaksi</h1>
+<div class="kartu"><h3>TOTAL PENDAPATAN</h3><h2 id="totalSemua">Rp 0</h2></div>
+<button onclick="downloadLaporan()">DOWNLOAD LAPORAN PDF</button><table id="tabelRiwayat" width="100%"></table></div></div></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+const firebaseConfig = {apiKey:"AIzaSyAS6vV7vmrTVfwvf8hKuu78gjdP_LXRFBY",authDomain:"poskasirxyz.firebaseapp.com",projectId:"poskasirxyz",storageBucket:"poskasirxyz.firebasestorage.app",messagingSenderId:"541115387509",appId:"1:541115387509:web:84b488359b814c1fdbb23c"};
+const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); let uid="", dataTrx=[];
+onAuthStateChanged(auth, (user)=>{ if(!user) return window.location='index.html'; uid=user.uid; load(); });
+async function load(){ 
+  const q=query(collection(db,"users",uid,"transaksi"),orderBy("tanggal","desc")); const snap=await getDocs(q);
+  let total=0; tabelRiwayat.innerHTML="<tr><th>Tanggal</th><th>Total</th></tr>";
+  snap.forEach(d=>{ const t=d.data(); total+=t.total; dataTrx.push(t);
+    tabelRiwayat.innerHTML+=`<tr><td>${t.tanggal.toDate().toLocaleString()}</td><td>Rp${t.total}</td></tr>`
+  }); totalSemua.innerText="Rp"+total;
+}
+window.downloadLaporan=()=>{ const {jsPDF}=window.jspdf; const doc=new jsPDF(); doc.text("LAPORAN POSKASIR.XYZ",10,10); let y=20; dataTrx.forEach(t=>{doc.text(`${t.tanggal.toDate().toLocaleDateString()} - Rp${t.total}`,10,y);y+=10}); doc.text(`TOTAL: Rp${totalSemua.innerText}`,10,y+10); doc.save("Laporan.pdf"); }
+window.logout=()=>signOut(auth);
+</script></body></html>
